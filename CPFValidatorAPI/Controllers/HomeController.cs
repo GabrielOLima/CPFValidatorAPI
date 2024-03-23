@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System;
 using static CPFValidatorAPI.Models.CPFModelos;
 using static CPFValidatorAPI.Helpers.CPFHelper;
-using CPFValidatorAPI.Helpers;
 
 namespace CPFValidatorAPI.Controllers
 {
@@ -11,88 +10,106 @@ namespace CPFValidatorAPI.Controllers
     [ApiController]
     public class CPFController : ControllerBase
     {
-        private readonly string bancoDeDados = "autorizacao.json";
-
-        public CPFController()
-        {
-            CPFHelper.bancoDeDados = bancoDeDados;
-        }
+        private readonly string authorizedCPFFilePath = "autorizacao.json";
         // Recebe input vazio
         [HttpPost("validate")]
         public IActionResult ValidateCPF([FromBody] CPFRequest cpfRequest)
         {
+            string cpf = cpfRequest.CPF;
             try
             {
-                if (cpfRequest == null || string.IsNullOrEmpty(cpfRequest.CPF))
+                if (!IsCpfValid(cpf))
                 {
                     FlowActionSendText flowActionSendText = new FlowActionSendText
                     {
-                        text = "CPF não fornecido, favor tentar novamente.",
+                        text = "CPF inválido, o mesmo deve ser completamente numérico, ou no formato tradicional 'XXX.XXX.XXX-YY', aguarde o reinicío do processo para tentar novamente...",
                         delay = 0,
                         type = 0
                     };
-
                     return Ok(flowActionSendText);
                 }
 
-                string cpf = cpfRequest.CPF;
-                if (IsCpfValid(cpf))
-                {
-                    if (IsCPFAuthorized(cpf))
-                    {
-                        string url = GetURLFromJSON();
-                        FlowActionSendMedia flowActionSendMedia = new FlowActionSendMedia
-                        {
-                            mediaType = 1,
-                            url = url,
-                            fileName = "Boleto Dummy",
-                            caption = "Boleto de Segunda Via, agradecemos a espera!",
-                            delay = 0,
-                            type = 1
-                        };
+                cpf = new string(cpf.Where(c => c != '.' && c != '-').ToArray());
 
-                        return Ok(flowActionSendMedia);
-                    }
-                    else
-                    {
-                        // Se o CPF é válido, mas não registrado
-                        FlowActionSendText flowActionSendText = new FlowActionSendText
-                        {
-                            text = "CPF válido, porém não registrado. Entre em contato para obter registro.",
-                            delay = 0,
-                            type = 0
-                        };
-
-                        return Ok(flowActionSendText);
-                    }
-                }
-                else
+                if (!IsCPFAuthorized(cpf))
                 {
-                    // Se o CPF é inválido
+                    // Se o CPF é válido, mas não registrado
                     FlowActionSendText flowActionSendText = new FlowActionSendText
                     {
-                        text = "CPF inválido, favor enviá-lo completamente numérico, ou no formato tradicional 'XXX.XXX.XXX-YY'",
+                        text = "CPF válido, porém não registrado. Entre em contato para obter registro. Aguarde o reinicío do processo para tentar novamente...",
                         delay = 0,
                         type = 0
                     };
-
                     return Ok(flowActionSendText);
                 }
+
+                string url = GetURLFromJSON();
+
+                FlowActionSendMedia flowActionSendMedia = new FlowActionSendMedia
+                {
+                    mediaType = 1,
+                    url = url,
+                    fileName = "Boleto Dummy",
+                    caption = "Boleto de Segunda Via, agradecemos a espera!",
+                    delay = 0,
+                    type = 1
+                };
+
+                return Ok(flowActionSendMedia);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Erro ao validar CPF: " + ex.Message);
-                // Retornar uma mensagem de erro genérica em caso de exceção
+                Console.WriteLine("Erro: " + ex.Message);
+
                 FlowActionSendText flowActionSendText = new FlowActionSendText
                 {
-                    text = "Ocorreu um erro ao validar o CPF. Por favor, tente novamente mais tarde.",
+                    text = "Ocorreu um erro interno no procedimento, favor tentar novamente mais tarde",
                     delay = 0,
                     type = 0
                 };
 
                 return Ok(flowActionSendText);
             }
+
+
+        }
+        // Validadores
+        // Para fins de fazer na mão: 'https://www.macoratti.net/alg_cpf.htm'
+
+        private bool IsCPFAuthorized(string cpf)
+        {
+            try
+            {
+                string jsonText = System.IO.File.ReadAllText(authorizedCPFFilePath);
+                var authorizedCPFs = JsonConvert.DeserializeObject<AuthorizedCPFs?>(jsonText);
+
+                return authorizedCPFs.CPFs.Contains(cpf);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erro ao verificar CPF autorizado: " + ex.Message);
+                return false;
+            }
+        }
+
+        private string GetURLFromJSON()
+        {
+            try
+            {
+                string jsonText = System.IO.File.ReadAllText(authorizedCPFFilePath);
+                var jsonObject = JsonConvert.DeserializeObject<AuthorizedCPFs>(jsonText);
+
+                return jsonObject.url;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erro ao obter URL do JSON: " + ex.Message);
+                //Se retornar isso, deu problema. É apenas para não quebrar o output.
+                return "https://clickdimensions.com/links/TestPDFfile.pdf";
+            }
         }
     }
+
+
 
 }

@@ -62,40 +62,10 @@ namespace CPFValidatorAPI.Helpers
             if (cpf[10] - '0' != remainder)
                 return false;
 
+            Console.WriteLine(cpf);
+
             // CPF é válido
             return true;
-        }
-
-        public static bool IsCPFAuthorized(string cpf)
-        {
-            try
-            {
-                string jsonText = File.ReadAllText(bancoDeDados);
-                var authorizedCPFs = JsonConvert.DeserializeObject<AuthorizedCPFs?>(jsonText);
-
-                return authorizedCPFs.CPFs.Contains(cpf);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error verifying authorized CPF: " + ex.Message);
-                return false;
-            }
-        }
-
-        public static string GetURLFromJSON()
-        {
-            try
-            {
-                string jsonText = File.ReadAllText(bancoDeDados);
-                var jsonObject = JsonConvert.DeserializeObject<AuthorizedCPFs>(jsonText);
-
-                return jsonObject.url;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error obtaining URL from JSON: " + ex.Message);
-                return "https://clickdimensions.com/links/TestPDFfile.pdf";
-            }
         }
     }
 }
