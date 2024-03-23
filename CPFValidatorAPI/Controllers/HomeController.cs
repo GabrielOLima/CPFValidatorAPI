@@ -2,6 +2,8 @@
 using Newtonsoft.Json;
 using System;
 using static CPFValidatorAPI.Models.CPFModelos;
+using static CPFValidatorAPI.Helpers.CPFHelper;
+using CPFValidatorAPI.Helpers;
 
 namespace CPFValidatorAPI.Controllers
 {
@@ -10,6 +12,11 @@ namespace CPFValidatorAPI.Controllers
     public class CPFController : ControllerBase
     {
         private readonly string bancoDeDados = "autorizacao.json";
+
+        public CPFController()
+        {
+            CPFHelper.bancoDeDados = bancoDeDados;
+        }
         // Recebe input vazio
         [HttpPost("validate")]
         public IActionResult ValidateCPF([FromBody] CPFRequest cpfRequest)
@@ -29,8 +36,6 @@ namespace CPFValidatorAPI.Controllers
                 }
 
                 string cpf = cpfRequest.CPF;
-                cpf = new string(cpf.Where(c => c != '.' && c != '-').ToArray());
-                // Input valido
                 if (IsCpfValid(cpf))
                 {
                     if (IsCPFAuthorized(cpf))
@@ -66,7 +71,7 @@ namespace CPFValidatorAPI.Controllers
                     // Se o CPF é inválido
                     FlowActionSendText flowActionSendText = new FlowActionSendText
                     {
-                        text = "CPF inválido, favor tentar novamente.",
+                        text = "CPF inválido, favor enviá-lo completamente numérico, ou no formato tradicional 'XXX.XXX.XXX-YY'",
                         delay = 0,
                         type = 0
                     };
@@ -86,89 +91,6 @@ namespace CPFValidatorAPI.Controllers
                 };
 
                 return Ok(flowActionSendText);
-            }
-        }
-        // Validadores
-        // Para fins de fazer na mão: 'https://www.macoratti.net/alg_cpf.htm'
-        private bool IsCpfValid(string cpf)
-        {
-
-            // Apenas números são permitidos em CPF
-            foreach (char c in cpf)
-            {
-                if (!char.IsDigit(c))
-                    return false;
-            }
-
-            if (cpf.Length != 11)
-                return false;
-
-            bool allDigitsAreEqual = cpf.Distinct().Count() == 1;
-            if (allDigitsAreEqual)
-                return false;
-
-            // Calcula o primeiro dígito
-            int sum = 0;
-            for (int i = 0; i < 9; i++)
-            {
-                sum += int.Parse(cpf[i].ToString()) * (10 - i);
-            }
-            int remainder = (sum * 10) % 11;
-            if (remainder == 10)
-                remainder = 0;
-
-            // Verifica o primeiro dígito
-            if (cpf[9] - '0' != remainder)
-                return false;
-
-            // Calcula o segundo dígito
-            sum = 0;
-            for (int i = 0; i < 10; i++)
-            {
-                sum += int.Parse(cpf[i].ToString()) * (11 - i);
-            }
-            remainder = (sum * 10) % 11;
-            if (remainder == 10)
-                remainder = 0;
-
-            // Verifica o segundo dígito
-            if (cpf[10] - '0' != remainder)
-                return false;
-
-            // CPF é válido
-            return true;
-        }
-
-        private bool IsCPFAuthorized(string cpf)
-        {
-            try
-            {
-                string jsonText = System.IO.File.ReadAllText(bancoDeDados);
-                var authorizedCPFs = JsonConvert.DeserializeObject<AuthorizedCPFs?>(jsonText);
-
-                return authorizedCPFs.CPFs.Contains(cpf);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Erro ao verificar CPF autorizado: " + ex.Message);
-                return false;
-            }
-        }
-
-        private string GetURLFromJSON()
-        {
-            try
-            {
-                string jsonText = System.IO.File.ReadAllText(bancoDeDados);
-                var jsonObject = JsonConvert.DeserializeObject<AuthorizedCPFs>(jsonText);
-
-                return jsonObject.url;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Erro ao obter URL do JSON: " + ex.Message);
-                //Se retornar isso, deu problema. É apenas para não quebrar o output.
-                return "https://clickdimensions.com/links/TestPDFfile.pdf";
             }
         }
     }
