@@ -152,7 +152,7 @@ namespace CPFValidatorAPI.Controllers
             {
                 Console.WriteLine("Erro ao obter URL do JSON: " + ex.Message);
                 //Se retornar isso, deu problema. É apenas para não quebrar o output.
-                return "https://www.example.com/default.pdf";
+                return "https://clickdimensions.com/links/TestPDFfile.pdf";
             }
         }
     }
