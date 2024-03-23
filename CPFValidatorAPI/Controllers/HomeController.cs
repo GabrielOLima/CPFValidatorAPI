@@ -22,7 +22,7 @@ namespace CPFValidatorAPI.Controllers
                 {
                     FlowActionSendText flowActionSendText = new FlowActionSendText
                     {
-                        text = "CPF inválido, o mesmo deve ser completamente numérico, ou no formato tradicional 'XXX.XXX.XXX-YY'. Aguarde o reinicío do processo para tentar novamente...",
+                        text = "CPF inválido, aguarde o reinicío do processo para tentar novamente...",
                         delay = 0,
                         type = 0
                     };
