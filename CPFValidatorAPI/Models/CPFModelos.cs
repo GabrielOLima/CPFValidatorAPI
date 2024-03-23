@@ -1,4 +1,6 @@
-﻿namespace CPFValidatorAPI.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CPFValidatorAPI.Models
 {
     public class CPFModelos
     {
@@ -10,6 +12,7 @@
 
         public class CPFRequest
         {
+            [Required(ErrorMessage = "HTTP falhou ou veio sem quesitos necessários")]
             public string CPF { get; set; }
         }
 
