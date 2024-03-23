@@ -22,7 +22,7 @@ namespace CPFValidatorAPI.Controllers
                 {
                     FlowActionSendText flowActionSendText = new FlowActionSendText
                     {
-                        text = "CPF inválido, aguarde o reinicío do processo para tentar novamente...",
+                        text = "CPF inválido, aguarde o reinício do processo para tentar novamente...",
                         delay = 0,
                         type = 0
                     };
@@ -35,7 +35,7 @@ namespace CPFValidatorAPI.Controllers
                     // Se o CPF é válido, mas não registrado
                     FlowActionSendText flowActionSendText = new FlowActionSendText
                     {
-                        text = "CPF válido, porém não registrado. Entre em contato para obter registro. Aguarde o reinicío do processo para tentar novamente...",
+                        text = "CPF válido, porém não registrado. Entre em contato para obter registro. Aguarde o reinício do processo para tentar novamente...",
                         delay = 0,
                         type = 0
                     };
