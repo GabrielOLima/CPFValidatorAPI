@@ -18,7 +18,7 @@ namespace CPFValidatorAPI.Controllers
             string cpf = cpfRequest.CPF;
             try
             {
-                if (!IsCpfValid(cpf))
+                if (!IsCpfValid(ref cpf))
                 {
                     FlowActionSendText flowActionSendText = new FlowActionSendText
                     {
@@ -29,7 +29,6 @@ namespace CPFValidatorAPI.Controllers
                     return Ok(flowActionSendText);
                 }
 
-                cpf = new string(cpf.Where(c => c != '.' && c != '-').ToArray());
 
                 if (!IsCPFAuthorized(cpf))
                 {
