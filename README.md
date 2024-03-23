@@ -5,3 +5,8 @@ API de Serviço de validação de CPF com integração ao Chatbot Suri. Esse API
 }
 
 O valor deve ser uma string, porém pode ser inserido completamente númerico, ou com os pontos e traços na estrutura de CPF Normal.
+
+
+CPFs Autorizados para receber boleto de segunda via:
+
+007.548.251-75 | 321.183.394-37 | 746.048.907-73 | 655.610.029-37 | 560.661.577-01
