@@ -28,7 +28,6 @@ namespace CPFValidatorAPI.Controllers
 
             string cpf = cpfRequest.CPF;
             cpf = new string(cpf.Where(char.IsDigit).ToArray());
-            Console.WriteLine(cpf);
             // Input valido
             if (IsCpfValid(cpf))
             {
@@ -153,6 +152,7 @@ namespace CPFValidatorAPI.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine("Erro ao obter URL do JSON: " + ex.Message);
+                //Se retornar isso, deu problema. É apenas para não quebrar o output.
                 return "https://www.example.com/default.pdf";
             }
         }
