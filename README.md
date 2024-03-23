@@ -1,4 +1,4 @@
-API de Serviço de validação de CPF com integração ao Chatbot Suri. Esse API é a mesma sendo hosteada atualmente em https://cpfvalidatorapi.azurewebsites.net, podendo ser testada em Postman com a URL https://cpfvalidatorapi.azurewebsites.net/api/CPF/validate, recendo um Json Body com essa estrutura
+API de Serviço de validação de CPF com integração ao Chatbot Suri. Esse API é a mesma sendo hosteada atualmente em https://cpfvalidatorapi.azurewebsites.net, podendo ser testada em Postman com a URL https://cpfvalidatorapi.azurewebsites.net/api/CPF/validate, recendo um Json Body com essa estrutura, como localmente, no mesmo intuito, porém a Suri Chatbot utiliza a API hosteada no Azure.
 
 {
   "cpf"="string"
