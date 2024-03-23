@@ -48,10 +48,10 @@ namespace CPFValidatorAPI.Controllers
                 }
                 else
                 {
-                    // Se o CPF é válido, mas não autorizado
+                    // Se o CPF é válido, mas não registrado
                     FlowActionSendText flowActionSendText = new FlowActionSendText
                     {
-                        text = "CPF válido, porém não autorizado. Entre em contato para obter autorização.",
+                        text = "CPF válido, porém não registrado. Entre em contato para obter registro.",
                         delay = 0,
                         type = 0
                     };
@@ -76,7 +76,6 @@ namespace CPFValidatorAPI.Controllers
         // Para fins de fazer na mão: 'https://www.macoratti.net/alg_cpf.htm'
         private bool IsCpfValid(string cpf)
         {
-            cpf = new string(cpf.Where(char.IsDigit).ToArray());
 
             // Apenas números são permitidos em CPF
             foreach (char c in cpf)
