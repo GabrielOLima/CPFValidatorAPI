@@ -27,7 +27,7 @@ namespace CPFValidatorAPI.Controllers
             }
 
             string cpf = cpfRequest.CPF;
-            cpf = new string(cpf.Where(char.IsDigit).ToArray());
+            cpf = new string(cpf.Where(c => c != '.' && c != '-').ToArray());
             // Input valido
             if (IsCpfValid(cpf))
             {
