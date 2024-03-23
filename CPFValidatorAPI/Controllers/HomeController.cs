@@ -73,7 +73,6 @@ namespace CPFValidatorAPI.Controllers
 
         }
         // Validadores
-        // Para fins de fazer na mão: 'https://www.macoratti.net/alg_cpf.htm'
 
         private bool IsCPFAuthorized(string cpf)
         {

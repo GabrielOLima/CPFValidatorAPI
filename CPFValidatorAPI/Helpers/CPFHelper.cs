@@ -8,8 +8,6 @@ namespace CPFValidatorAPI.Helpers
     public static class CPFHelper
     {
 
-        public static string bancoDeDados { get; set; }
-
         public static bool IsCpfValid(ref string cpf)
         {
             // O algoritmo observará se o CPF veio completamente em números, ou no formato correto, e tamanho correto. Se não, já devolverá.
