@@ -9,49 +9,64 @@ namespace CPFValidatorAPI.Controllers
     [ApiController]
     public class CPFController : ControllerBase
     {
-        private readonly string authorizedCPFFilePath = "autorizacao.json";
+        private readonly string bancoDeDados = "autorizacao.json";
         // Recebe input vazio
         [HttpPost("validate")]
         public IActionResult ValidateCPF([FromBody] CPFRequest cpfRequest)
         {
-            if (cpfRequest == null || string.IsNullOrEmpty(cpfRequest.CPF))
+            try
             {
-                FlowActionSendText flowActionSendText = new FlowActionSendText
+                if (cpfRequest == null || string.IsNullOrEmpty(cpfRequest.CPF))
                 {
-                    text = "CPF não fornecido, favor tentar novamente.",
-                    delay = 0,
-                    type = 0
-                };
-
-                return Ok(flowActionSendText);
-            }
-
-            string cpf = cpfRequest.CPF;
-            cpf = new string(cpf.Where(c => c != '.' && c != '-').ToArray());
-            // Input valido
-            if (IsCpfValid(cpf))
-            {
-                if (IsCPFAuthorized(cpf))
-                {
-                    string url = GetURLFromJSON();
-                    FlowActionSendMedia flowActionSendMedia = new FlowActionSendMedia
+                    FlowActionSendText flowActionSendText = new FlowActionSendText
                     {
-                        mediaType = 1,
-                        url = url,
-                        fileName = "Boleto Dummy",
-                        caption = "Boleto de Segunda Via, agradeçemos a espera!",
+                        text = "CPF não fornecido, favor tentar novamente.",
                         delay = 0,
-                        type = 1
+                        type = 0
                     };
 
-                    return Ok(flowActionSendMedia);
+                    return Ok(flowActionSendText);
+                }
+
+                string cpf = cpfRequest.CPF;
+                cpf = new string(cpf.Where(c => c != '.' && c != '-').ToArray());
+                // Input valido
+                if (IsCpfValid(cpf))
+                {
+                    if (IsCPFAuthorized(cpf))
+                    {
+                        string url = GetURLFromJSON();
+                        FlowActionSendMedia flowActionSendMedia = new FlowActionSendMedia
+                        {
+                            mediaType = 1,
+                            url = url,
+                            fileName = "Boleto Dummy",
+                            caption = "Boleto de Segunda Via, agradecemos a espera!",
+                            delay = 0,
+                            type = 1
+                        };
+
+                        return Ok(flowActionSendMedia);
+                    }
+                    else
+                    {
+                        // Se o CPF é válido, mas não registrado
+                        FlowActionSendText flowActionSendText = new FlowActionSendText
+                        {
+                            text = "CPF válido, porém não registrado. Entre em contato para obter registro.",
+                            delay = 0,
+                            type = 0
+                        };
+
+                        return Ok(flowActionSendText);
+                    }
                 }
                 else
                 {
-                    // Se o CPF é válido, mas não registrado
+                    // Se o CPF é inválido
                     FlowActionSendText flowActionSendText = new FlowActionSendText
                     {
-                        text = "CPF válido, porém não registrado. Entre em contato para obter registro.",
+                        text = "CPF inválido, favor tentar novamente.",
                         delay = 0,
                         type = 0
                     };
@@ -59,12 +74,13 @@ namespace CPFValidatorAPI.Controllers
                     return Ok(flowActionSendText);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                // Se o CPF é inválido
+                Console.WriteLine("Erro ao validar CPF: " + ex.Message);
+                // Retornar uma mensagem de erro genérica em caso de exceção
                 FlowActionSendText flowActionSendText = new FlowActionSendText
                 {
-                    text = "CPF inválido, favor tentar novamente.",
+                    text = "Ocorreu um erro ao validar o CPF. Por favor, tente novamente mais tarde.",
                     delay = 0,
                     type = 0
                 };
@@ -127,7 +143,7 @@ namespace CPFValidatorAPI.Controllers
         {
             try
             {
-                string jsonText = System.IO.File.ReadAllText(authorizedCPFFilePath);
+                string jsonText = System.IO.File.ReadAllText(bancoDeDados);
                 var authorizedCPFs = JsonConvert.DeserializeObject<AuthorizedCPFs?>(jsonText);
 
                 return authorizedCPFs.CPFs.Contains(cpf);
@@ -143,7 +159,7 @@ namespace CPFValidatorAPI.Controllers
         {
             try
             {
-                string jsonText = System.IO.File.ReadAllText(authorizedCPFFilePath);
+                string jsonText = System.IO.File.ReadAllText(bancoDeDados);
                 var jsonObject = JsonConvert.DeserializeObject<AuthorizedCPFs>(jsonText);
 
                 return jsonObject.url;
@@ -156,7 +172,5 @@ namespace CPFValidatorAPI.Controllers
             }
         }
     }
-
-
 
 }
