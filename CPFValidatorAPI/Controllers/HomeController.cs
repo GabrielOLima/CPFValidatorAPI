@@ -23,7 +23,7 @@ namespace CPFValidatorAPI.Controllers
                 {
                     FlowActionSendText flowActionSendText = new FlowActionSendText
                     {
-                        text = "CPF não fornecido, favor tentar novamente.",
+                        text = "CPF não fornecido, favor tentar novamente. Reiniciando o processo...",
                         delay = 0,
                         type = 0
                     };

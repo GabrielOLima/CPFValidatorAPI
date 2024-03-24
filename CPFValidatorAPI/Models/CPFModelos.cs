@@ -12,7 +12,6 @@ namespace CPFValidatorAPI.Models
 
         public class CPFRequest
         {
-            [Required(ErrorMessage = "HTTP falhou ou veio sem quesitos necessários")]
             public string CPF { get; set; }
         }
 
