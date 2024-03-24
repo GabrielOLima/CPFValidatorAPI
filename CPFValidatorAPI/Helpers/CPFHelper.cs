@@ -66,5 +66,38 @@ namespace CPFValidatorAPI.Helpers
             cpf = tempCpf;
             return true;
         }
+
+        public static bool IsCPFAuthorized(string cpf, string bancoDeDados)
+        {
+            try
+            {
+                string jsonText = System.IO.File.ReadAllText(bancoDeDados);
+                var authorizedCPFs = JsonConvert.DeserializeObject<AuthorizedCPFs?>(jsonText);
+
+                return authorizedCPFs.CPFs.Contains(cpf);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erro ao verificar CPF autorizado: " + ex.Message);
+                return false;
+            }
+        }
+
+        public static string GetURLFromJSON(string bancoDeDados)
+        {
+            try
+            {
+                string jsonText = System.IO.File.ReadAllText(bancoDeDados);
+                var jsonObject = JsonConvert.DeserializeObject<AuthorizedCPFs>(jsonText);
+
+                return jsonObject.url;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erro ao obter URL do JSON: " + ex.Message);
+                // Se retornar isso, deu problema. É apenas para não quebrar o output.
+                return "https://clickdimensions.com/links/TestPDFfile.pdf";
+            }
+        }
     }
 }

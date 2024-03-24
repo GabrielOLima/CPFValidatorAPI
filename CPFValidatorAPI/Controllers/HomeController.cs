@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using static CPFValidatorAPI.Models.CPFModelos;
 using static CPFValidatorAPI.Helpers.CPFHelper;
+using CPFValidatorAPI.Helpers;
 
 namespace CPFValidatorAPI.Controllers
 {
@@ -10,7 +11,7 @@ namespace CPFValidatorAPI.Controllers
     [ApiController]
     public class CPFController : ControllerBase
     {
-        private readonly string authorizedCPFFilePath = "autorizacao.json";
+        private readonly string bancoDeDados = "autorizacao.json";
         // Recebe input vazio
         [HttpPost("validate")]
         public IActionResult ValidateCPF([FromBody] CPFRequest cpfRequest)
@@ -18,6 +19,17 @@ namespace CPFValidatorAPI.Controllers
             string cpf = cpfRequest.CPF;
             try
             {
+                if (cpfRequest == null || string.IsNullOrEmpty(cpfRequest.CPF))
+                {
+                    FlowActionSendText flowActionSendText = new FlowActionSendText
+                    {
+                        text = "CPF não fornecido, favor tentar novamente.",
+                        delay = 0,
+                        type = 0
+                    };
+
+                    return Ok(flowActionSendText);
+                }
                 if (!IsCpfValid(ref cpf))
                 {
                     FlowActionSendText flowActionSendText = new FlowActionSendText
@@ -30,7 +42,7 @@ namespace CPFValidatorAPI.Controllers
                 }
 
 
-                if (!IsCPFAuthorized(cpf))
+                if (!IsCPFAuthorized(cpf, bancoDeDados))
                 {
                     // Se o CPF é válido, mas não registrado
                     FlowActionSendText flowActionSendText = new FlowActionSendText
@@ -42,7 +54,7 @@ namespace CPFValidatorAPI.Controllers
                     return Ok(flowActionSendText);
                 }
 
-                string url = GetURLFromJSON();
+                string url = GetURLFromJSON(bancoDeDados);
 
                 FlowActionSendMedia flowActionSendMedia = new FlowActionSendMedia
                 {
@@ -69,45 +81,6 @@ namespace CPFValidatorAPI.Controllers
 
                 return Ok(flowActionSendText);
             }
-
-
-        }
-        // Validadores
-
-        private bool IsCPFAuthorized(string cpf)
-        {
-            try
-            {
-                string jsonText = System.IO.File.ReadAllText(authorizedCPFFilePath);
-                var authorizedCPFs = JsonConvert.DeserializeObject<AuthorizedCPFs?>(jsonText);
-
-                return authorizedCPFs.CPFs.Contains(cpf);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Erro ao verificar CPF autorizado: " + ex.Message);
-                return false;
-            }
-        }
-
-        private string GetURLFromJSON()
-        {
-            try
-            {
-                string jsonText = System.IO.File.ReadAllText(authorizedCPFFilePath);
-                var jsonObject = JsonConvert.DeserializeObject<AuthorizedCPFs>(jsonText);
-
-                return jsonObject.url;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Erro ao obter URL do JSON: " + ex.Message);
-                //Se retornar isso, deu problema. É apenas para não quebrar o output.
-                return "https://clickdimensions.com/links/TestPDFfile.pdf";
-            }
         }
     }
-
-
-
 }
